@@ -1,0 +1,32 @@
+image: lambci/lambda:build-python3.7
+
+stages:
+  - test
+  - package
+  - deploy
+
+before_script:
+  - pip install pytest
+  - chmod +x ./bin/package_lambda.sh ./bin/deploy_lambda.sh
+
+pytest:
+  stage: test
+  script:
+    - pytest ac_control_lambda/tests -vv
+
+package_lambda:
+  stage: package
+  script:
+    - ./bin/package_lambda.sh
+  artifacts:
+    paths:
+      - lambda_function_payload.zip
+    expire_in: 1 week
+
+deploy_lambda:
+  stage: deploy
+  needs:
+    - job: package_lambda
+      artifacts: true
+  script:
+    - ./bin/deploy_lambda.sh
