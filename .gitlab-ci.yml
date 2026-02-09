@@ -29,4 +29,5 @@ deploy_lambda:
     - job: package_lambda
       artifacts: true
   script:
+    - pip install awscli
     - ./bin/deploy_lambda.sh
