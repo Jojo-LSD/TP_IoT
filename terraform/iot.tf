@@ -55,6 +55,33 @@ resource "aws_iot_topic_rule" "valid_temperature_to_dynamodb" {
   }
 }
 
+resource "aws_iot_topic_rule" "valid_temperature_to_timestream" {
+  name        = "valid_temperature_to_timestream"
+  enabled     = true
+  sql         = "SELECT *, timestamp() as ts FROM 'sensor/temperature/+' where temperature <= 40"
+  sql_version = "2016-03-23"
+
+  timestream {
+    role_arn      = aws_iam_role.iot_role.arn
+    database_name = aws_timestreamwrite_database.iot.database_name
+    table_name    = aws_timestreamwrite_table.temperature_sensor.table_name
+
+    dimension {
+      name  = "zone_id"
+      value = "$${zone_id}"
+    }
+
+    dimension {
+      name  = "sensor_id"
+      value = "$${sensor_id}"
+    }
+
+    timestamp {
+      unit  = "MILLISECONDS"
+      value = "$${ts}"
+    }
+  }
+}
 
 ###########################################################################################
 # Enable the following resource to enable logging for IoT Core (helps debug)

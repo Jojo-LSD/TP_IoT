@@ -47,6 +47,28 @@ resource "aws_iam_role_policy" "iam_policy_for_temperature_dynamodb" {
   })
 }
 
+resource "aws_iam_role_policy" "iam_policy_for_timestream_writing" {
+  name = "iam_policy_for_timestream_writing"
+  role = aws_iam_role.iot_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "timestream:DescribeEndpoints",
+          "timestream:WriteRecords"
+        ]
+        Resource = [
+          aws_timestreamwrite_database.iot.arn,
+          aws_timestreamwrite_table.temperature_sensor.arn
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role" "lambda_role" {
   name = "lambda_role"
 
